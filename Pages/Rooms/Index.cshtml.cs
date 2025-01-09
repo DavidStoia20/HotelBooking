@@ -19,11 +19,36 @@ namespace HotelBooking.Pages.Rooms
             _context = context;
         }
 
-        public IList<Room> Room { get;set; } = default!;
+        public IList<Room> Rooms { get; set; } = new List<Room>();
+
+        [BindProperty(SupportsGet = true)]
+        public string Type { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public decimal? MaxPrice { get; set; }
 
         public async Task OnGetAsync()
         {
-            Room = await _context.Room.ToListAsync();
+            if (_context.Room != null)
+            {
+                // Construim o interogare de bază pentru camere
+                var query = _context.Room.AsQueryable();
+
+                // Filtrare după tipul camerei
+                if (!string.IsNullOrEmpty(Type))
+                {
+                    query = query.Where(r => r.Type == Type);
+                }
+
+                // Filtrare după preț maxim
+                if (MaxPrice.HasValue)
+                {
+                    query = query.Where(r => r.Price <= MaxPrice.Value);
+                }
+
+                // Obține lista filtrată
+                Rooms = await query.ToListAsync();
+            }
         }
     }
 }

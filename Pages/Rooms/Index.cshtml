@@ -1,60 +1,134 @@
 ﻿@page
 @model HotelBooking.Pages.Rooms.IndexModel
-
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Camere Pentru Rezervare";
 }
 
-<h1>Index</h1>
+<h1 class="page-title">Camere Disponibile</h1>
 
-<p>
-    <a asp-page="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Room[0].RoomNumber)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Room[0].Type)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Room[0].Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Room[0].Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Room[0].IsAvailable)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model.Room) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.RoomNumber)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Type)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsAvailable)
-            </td>
-            <td>
-                <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<form method="get" class="filter-form">
+    <div class="filter-group">
+        <label for="type">Tipul Camerei:</label>
+        <select id="type" name="Type">
+            <option value="">Toate</option>
+            <option value="Single">Single</option>
+            <option value="Double">Double</option>
+            <option value="Suite">Suite</option>
+        </select>
+
+        <label for="price">Preț maxim:</label>
+        <input type="number" id="price" name="MaxPrice" />
+
+        <button type="submit" class="btn">Filtrează</button>
+    </div>
+</form>
+
+<div class="rooms-list">
+    @if (Model.Rooms.Any())
+    {
+        <div class="room-cards">
+            @foreach (var room in Model.Rooms)
+            {
+                <div class="room-card">
+                    <h2>@room.RoomNumber - @room.Type</h2>
+                    <p>@room.Description</p>
+                    <p><strong>Preț:</strong> @room.Price RON/noapte</p>
+                    @if (room.IsAvailable)
+                    {
+                        <a asp-page="/Bookings/Create" asp-route-roomId="@room.Id" class="btn btn-primary">Rezervă</a>
+                    }
+                    else
+                    {
+                        <button class="btn" disabled>Indisponibil</button>
+                    }
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="no-rooms">Nu există camere disponibile care să corespundă filtrului.</p>
+    }
+</div>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 0;
+    }
+
+    .page-title {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .filter-form {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .filter-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+        .filter-group label {
+            margin-right: 5px;
+        }
+
+    .btn {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .btn[disabled] {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+    .rooms-list {
+        display: flex;
+        justify-content: center;
+    }
+
+    .room-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        width: 90%;
+    }
+
+    .room-card {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+        .room-card h2 {
+            margin: 0 0 10px;
+        }
+
+        .room-card p {
+            margin: 5px 0;
+        }
+
+    .no-rooms {
+        text-align: center;
+        color: #888;
+    }
+</style>
