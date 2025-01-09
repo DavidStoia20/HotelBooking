@@ -1,0 +1,43 @@
+﻿@page
+@model HotelBooking.Pages.AppUsers.DetailsModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>AppUser</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.AppUser.Username)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.AppUser.Username)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.AppUser.Password)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.AppUser.Password)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.AppUser.Role)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.AppUser.Role)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.AppUser.Email)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.AppUser.Email)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-page="./Edit" asp-route-id="@Model.AppUser.Id">Edit</a> |
+    <a asp-page="./Index">Back to List</a>
+</div>
