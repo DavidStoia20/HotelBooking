@@ -27,28 +27,41 @@ namespace HotelBooking.Pages.Rooms
         [BindProperty(SupportsGet = true)]
         public decimal? MaxPrice { get; set; }
 
-        public async Task OnGetAsync()
+        [BindProperty(SupportsGet = true)]
+        public string SortBy { get; set; } // Nouă proprietate pentru sortare
+
+        public async Task OnGetAsync(string Type, decimal? MaxPrice, string SortBy)
         {
-            if (_context.Room != null)
+            var roomsQuery = _context.Room.AsQueryable();
+
+            // Aplică filtrul pentru tipul camerei
+            if (!string.IsNullOrEmpty(Type))
             {
-                // Construim o interogare de bază pentru camere
-                var query = _context.Room.AsQueryable();
-
-                // Filtrare după tipul camerei
-                if (!string.IsNullOrEmpty(Type))
-                {
-                    query = query.Where(r => r.Type == Type);
-                }
-
-                // Filtrare după preț maxim
-                if (MaxPrice.HasValue)
-                {
-                    query = query.Where(r => r.Price <= MaxPrice.Value);
-                }
-
-                // Obține lista filtrată
-                Rooms = await query.ToListAsync();
+                roomsQuery = roomsQuery.Where(r => r.Type == Type);
             }
+
+            // Aplică filtrul pentru preț
+            if (MaxPrice.HasValue)
+            {
+                roomsQuery = roomsQuery.Where(r => r.Price <= MaxPrice.Value);
+            }
+
+            // Aplică sortarea
+            if (SortBy == "PriceAsc")
+            {
+                roomsQuery = roomsQuery.OrderBy(r => r.Price);
+            }
+            else if (SortBy == "PriceDesc")
+            {
+                roomsQuery = roomsQuery.OrderByDescending(r => r.Price);
+            }
+            else if (SortBy == "Type")
+            {
+                roomsQuery = roomsQuery.OrderBy(r => r.Type);
+            }
+
+            // Obține lista de camere filtrate și sortate
+            Rooms = await roomsQuery.ToListAsync();
         }
     }
 }

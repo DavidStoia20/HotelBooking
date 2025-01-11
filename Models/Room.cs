@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace HotelBooking.Models
 {
@@ -23,5 +25,12 @@ namespace HotelBooking.Models
 
         [Required]
         public bool IsAvailable { get; set; } = true;
+
+        // Relație cu recenziile
+        public ICollection<Review> Reviews { get; set; } = new List<Review>();
+
+        // Media rating-urilor
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public double AverageRating => Reviews.Any() ? Reviews.Average(r => r.Rating) : 0;
     }
 }

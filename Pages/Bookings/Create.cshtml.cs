@@ -11,9 +11,9 @@ namespace HotelBooking.Pages.Bookings
 {
     public class CreateModel : PageModel
     {
-        private readonly HotelBooking.Data.HotelBookingContext _context;
+        private readonly HotelBookingContext _context;
 
-        public CreateModel(HotelBooking.Data.HotelBookingContext context)
+        public CreateModel(HotelBookingContext context)
         {
             _context = context;
         }
@@ -21,78 +21,69 @@ namespace HotelBooking.Pages.Bookings
         [BindProperty]
         public Booking Booking { get; set; }
 
-        public Room Room { get; private set; } // Modificat la private set pentru control mai bun
+        public Room Room { get; set; }
 
         [BindProperty(SupportsGet = true)]
         public int RoomId { get; set; }
 
-        public async Task<IActionResult> OnGetAsync()
+        // Metoda OnGetAsync pentru preluarea camerei din baza de date pe baza roomId
+        public async Task<IActionResult> OnGetAsync(int roomId)
         {
-            if (RoomId <= 0)
+            if (roomId <= 0)
             {
-                return NotFound("ID-ul camerei nu a fost transmis corect.");
+                return RedirectToPage("/Rooms/Index"); // Redirecționează la lista de camere dacă roomId lipsește sau este invalid
             }
 
-            // Preluăm camera pe baza RoomId
-            Room = await _context.Room.FirstOrDefaultAsync(r => r.Id == RoomId);
+            // Verifică camera în baza de date
+            Room = await _context.Room.FirstOrDefaultAsync(r => r.Id == roomId);
 
             if (Room == null)
             {
+                Console.WriteLine($"Camera cu id-ul {roomId} nu a fost găsită.");
                 return NotFound("Camera selectată nu există.");
             }
 
-            // Populează Booking cu RoomId pentru afișare în pagină
-            Booking = new Booking
-            {
-                RoomId = RoomId
-            };
-
-            Console.WriteLine($"RoomId: {RoomId}");
-            Console.WriteLine($"Room: {Room?.RoomNumber ?? "Null"}");
-
-            return Page();
+            return Page(); // Returnează pagina dacă camera este găsită
         }
 
+
+        // Metoda OnPostAsync pentru procesarea datelor trimise prin POST (rezervare)
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
             {
-                // Asigură-te că Room este preluat din baza de date pentru afișare în cazul unei erori
-                Room = await _context.Room.FirstOrDefaultAsync(r => r.Id == Booking.RoomId);
-                return Page();
+                return Page(); // Dacă modelul nu este valid, rămâne pe aceeași pagină
             }
 
-            // Validăm dacă RoomId și Room sunt valide
+            // Verificăm dacă camera selectată este disponibilă
             Room = await _context.Room.FirstOrDefaultAsync(r => r.Id == Booking.RoomId);
-
-            if (Room == null)
+            if (Room == null || !Room.IsAvailable)
             {
                 ModelState.AddModelError(string.Empty, "Camera selectată nu mai este disponibilă.");
-                return Page();
+                return Page(); // Dacă camera nu este disponibilă, rămâne pe aceeași pagină
             }
 
-            // Validare: Check-in și Check-out
-            if (Booking.CheckInDate < DateTime.Now.Date)
+            // Verificăm disponibilitatea pe perioada aleasă
+            var existingBookings = await _context.Booking
+                .Where(b => b.RoomId == Booking.RoomId &&
+                           ((b.CheckInDate >= Booking.CheckInDate && b.CheckInDate < Booking.CheckOutDate) ||
+                            (b.CheckOutDate > Booking.CheckInDate && b.CheckOutDate <= Booking.CheckOutDate)))
+                .ToListAsync();
+
+            if (existingBookings.Any())
             {
-                ModelState.AddModelError("Booking.CheckInDate", "Data de Check-In trebuie să fie cel puțin astăzi.");
+                ModelState.AddModelError(string.Empty, "Camera selectată nu mai este disponibilă pentru perioada aleasă.");
                 return Page();
             }
 
-            if (Booking.CheckOutDate <= Booking.CheckInDate)
-            {
-                ModelState.AddModelError("Booking.CheckOutDate", "Data de Check-Out trebuie să fie după Check-In.");
-                return Page();
-            }
-
-            // Calculează prețul total pe baza duratei și prețului camerei
+            // Calculăm prețul total
             Booking.TotalPrice = (Booking.CheckOutDate - Booking.CheckInDate).Days * Room.Price;
 
-            // Adaugă rezervarea în baza de date
+            // Adăugăm rezervarea în baza de date
             _context.Booking.Add(Booking);
             await _context.SaveChangesAsync();
 
-            Console.WriteLine($"Rezervare adăugată: RoomId={Booking.RoomId}, TotalPrice={Booking.TotalPrice}");
-
+            // Redirecționează utilizatorul către o altă pagină (de exemplu, pagina principală a rezervărilor)
             return RedirectToPage("./Index");
         }
     }

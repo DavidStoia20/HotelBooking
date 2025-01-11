@@ -7,11 +7,19 @@
 
 <h1>Create Booking</h1>
 
-<div>
-    <h2>@Model.Room.RoomNumber - @Model.Room.Type</h2>
-    <p>@Model.Room.Description</p>
-    <p><strong>Preț per noapte:</strong> <span id="pricePerNight">@Model.Room.Price</span> RON</p>
-</div>
+@if (Model.Room != null)
+
+{
+    <h2>@Model.Room.RoomNumber - @Model.Room.Description</h2>
+    <p><strong>Preț pe noapte: @Model.Room.Price</strong></p>
+    <span id="pricePerNight" style="display:none;">@Model.Room.Price</span> <!-- Ascunde prețul pe noapte pentru a-l folosi în calcul -->
+}
+
+else
+
+{
+    <p>Camera nu a fost găsită.</p>
+}
 
 <form method="post">
     <div class="form-group">
@@ -29,6 +37,7 @@
         <input type="text" id="TotalPrice" asp-for="Booking.TotalPrice" class="form-control" readonly />
         <span asp-validation-for="Booking.TotalPrice" class="text-danger"></span>
     </div>
+
     <button type="submit" class="btn btn-primary">Confirmă Rezervarea</button>
 </form>
 
@@ -50,9 +59,9 @@
 
                 if (!isNaN(checkIn) && !isNaN(checkOut) && checkOut > checkIn) {
                     const diffDays = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-                    totalPrice.value = (diffDays * pricePerNight).toFixed(2);
+                    totalPrice.value = (diffDays * pricePerNight).toFixed(2);  // Modifică valoarea corect
                 } else {
-                    totalPrice.value = '';
+                    totalPrice.value = '';  // Resetarea valorii în caz de date invalid
                 }
             }
 

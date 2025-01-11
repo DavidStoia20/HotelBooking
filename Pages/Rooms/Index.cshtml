@@ -1,10 +1,10 @@
 ﻿@page
 @model HotelBooking.Pages.Rooms.IndexModel
 @{
-    ViewData["Title"] = "Camere Pentru Rezervare";
+    ViewData["Title"] = "Camere Disponibile";
 }
 
-<h1 class="page-title">Camere Disponibile</h1>
+<h1>Camere Disponibile</h1>
 
 <form method="get" class="filter-form">
     <div class="filter-group">
@@ -23,6 +23,18 @@
     </div>
 </form>
 
+
+<form method="get" class="sort-form" style="display: flex; align-items: center; gap: 10px; max-width: 400px; margin: 10px auto;">
+    <label for="sort" style="font-weight: bold; margin-right: 5px;">Sortează:</label>
+    <select id="sort" name="SortBy" class="form-select" style="width: 150px; padding: 5px; border-radius: 5px; border: 1px solid #ccc;">
+        <option value="">Implicit</option>
+        <option value="PriceAsc">Preț crescător</option>
+        <option value="PriceDesc">Preț descrescător</option>
+        <option value="Type">Tip cameră</option>
+    </select>
+    <button type="submit" class="btn btn-primary" style="padding: 5px 10px; font-size: 14px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Aplică</button>
+</form>
+
 <div class="rooms-list">
     @if (Model.Rooms.Any())
     {
@@ -33,9 +45,13 @@
                     <h2>@room.RoomNumber - @room.Type</h2>
                     <p>@room.Description</p>
                     <p><strong>Preț:</strong> @room.Price RON/noapte</p>
+                    <p><strong>Media evaluărilor:</strong> @room.AverageRating.ToString("0.0")</p>
                     @if (room.IsAvailable)
                     {
-                        <a asp-page="/Bookings/Create" asp-route-roomId="@room.Id" class="btn btn-primary">Rezervă</a>
+                        <form method="post" action="/Bookings/Create">
+                            <input type="hidden" name="RoomId" value="@room.Id" />
+                            <a asp-page="/Bookings/Create" asp-route-roomId="@room.Id" class="btn btn-primary">Rezervă</a>
+                        </form>
                     }
                     else
                     {
